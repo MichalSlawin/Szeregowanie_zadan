@@ -1,12 +1,14 @@
+package org.graph;
+
 public class Task {
     private String name;
-    private int importance;
+    private int duration;
     private boolean isStart = false;
     private boolean isEnd = false;
 
-    Task(String name, int importance) {
+    Task(String name, int duration) {
         this.name = name;
-        this.importance = importance;
+        this.duration = duration;
     }
 
     public String getName() {
@@ -17,12 +19,12 @@ public class Task {
         this.name = name;
     }
 
-    public int getImportance() {
-        return importance;
+    public int getDuration() {
+        return duration;
     }
 
-    public void setImportance(int importance) {
-        this.importance = importance;
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 
     public boolean isStart() {
@@ -43,7 +45,7 @@ public class Task {
 
     @Override
     public String toString() {
-        String str = this.name + "(" + this.importance + ")";
+        String str = this.name + "(" + this.duration + ")";
 //        if(this.isEnd) {
 //            str = str.concat(" END");
 //        }
