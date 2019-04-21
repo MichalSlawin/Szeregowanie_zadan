@@ -5,5 +5,6 @@ class GraphTests {
     static void createGraphTest() {
         TasksGraph tasksGraph = new TasksGraph(FILENAME1);
         System.out.println(tasksGraph.getGraph());
+        System.out.println(tasksGraph.getCriticalPath());
     }
 }

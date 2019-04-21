@@ -46,12 +46,12 @@ public class Task {
     @Override
     public String toString() {
         String str = this.name + "(" + this.duration + ")";
-//        if(this.isEnd) {
-//            str = str.concat(" END");
-//        }
-//        if(this.isStart) {
-//            str = str.concat(" START");
-//        }
+        if(this.isEnd) {
+            str = str.concat(" END");
+        }
+        if(this.isStart) {
+            str = str.concat(" START");
+        }
         return str;
     }
 }

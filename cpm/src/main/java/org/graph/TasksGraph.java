@@ -1,6 +1,7 @@
 package org.graph;
 
 import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedMultigraph;
@@ -9,29 +10,54 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
-public class TasksGraph {
+class TasksGraph {
     private Graph<Task, DefaultEdge> graph;
-    private AllDirectedPaths<Task, DefaultEdge> paths;
 
     TasksGraph(String fileName) {
         this.graph = new DirectedMultigraph<>(DefaultEdge.class);
         createGraph(fileName);
-
-        this.paths = new AllDirectedPaths<>(this.graph);
+        setStartAndEndTasks();
     }
 
     Graph<Task, DefaultEdge> getGraph() {
         return graph;
     }
 
-    public AllDirectedPaths<Task, DefaultEdge> getPaths() {
-        return paths;
+    private List<GraphPath<Task, DefaultEdge>> getAllPaths(Task startTask, Task endTask) {
+        AllDirectedPaths<Task, DefaultEdge> paths = new AllDirectedPaths<>(this.graph);
+        return paths.getAllPaths(startTask, endTask, true, null);
+    }
+
+    public GraphPath<Task, DefaultEdge> getCriticalPath() {
+        List<Task> startTasksList = getStartTasks();
+        List<Task> endTasksList = getEndTasks();
+        int criticalPathDuration = 0;
+        GraphPath<Task, DefaultEdge> criticalPath = null;
+
+        for(Task startTask : startTasksList) {
+            for(Task endTask : endTasksList) {
+                List<GraphPath<Task, DefaultEdge>> allPaths = getAllPaths(startTask, endTask);
+                for(GraphPath<Task, DefaultEdge> path : allPaths) {
+                    int duration = 0;
+                    for(Task task : path.getVertexList()) {
+                        duration += task.getDuration();
+                    }
+                    if(duration > criticalPathDuration) {
+                        criticalPathDuration = duration;
+                        criticalPath = path;
+                    }
+                }
+            }
+        }
+        return criticalPath;
     }
 
     private void createGraph(String fileName) {
-        String line = null;
+        String line;
 
         try {
             FileReader fileReader = new FileReader(fileName);
@@ -39,7 +65,6 @@ public class TasksGraph {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
             while((line = bufferedReader.readLine()) != null) {
-                System.out.println(line);
                 createTasksAndEdge(line);
             }
             bufferedReader.close();
@@ -74,6 +99,39 @@ public class TasksGraph {
             this.graph.addVertex(task2);
         }
         graph.addEdge(task1, task2);
+    }
+
+    private void setStartAndEndTasks() {
+        for(Task task : this.graph.vertexSet()) {
+            if(graph.incomingEdgesOf(task).isEmpty()) {
+                task.setStart(true);
+            }
+            if(graph.outgoingEdgesOf(task).isEmpty()) {
+                task.setEnd(true);
+            }
+        }
+    }
+
+    private List<Task> getStartTasks() {
+        List<Task> tasksList = new ArrayList<>();
+        Set<Task> tasksSet = this.graph.vertexSet();
+        for(Task task : tasksSet) {
+            if(task.isStart()) {
+                tasksList.add(task);
+            }
+        }
+        return tasksList;
+    }
+
+    private List<Task> getEndTasks() {
+        List<Task> tasksList = new ArrayList<>();
+        Set<Task> tasksSet = this.graph.vertexSet();
+        for(Task task : tasksSet) {
+            if(task.isEnd()) {
+                tasksList.add(task);
+            }
+        }
+        return tasksList;
     }
 
     private Task findTaskByName(String name) {
