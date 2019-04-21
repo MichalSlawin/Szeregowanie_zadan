@@ -6,5 +6,6 @@ class GraphTests {
         TasksGraph tasksGraph = new TasksGraph(FILENAME1);
         System.out.println(tasksGraph.getGraph());
         System.out.println(tasksGraph.getCriticalPath());
+        System.out.println(tasksGraph.getCriticalPath().getDuration());
     }
 }
