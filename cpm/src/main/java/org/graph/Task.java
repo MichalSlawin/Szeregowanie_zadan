@@ -6,10 +6,10 @@ public class Task {
     private boolean isStart = false;
     private boolean isEnd = false;
     private boolean isCritical = false;
-    private int earliestStart;
-    private int latestStart;
-    private int earliestFinish;
-    private int latestFinish;
+    private int earliestStart = -1;
+    private int latestStart = -1;
+    private int earliestFinish = -1;
+    private int latestFinish = -1;
 
     Task(String name, int duration) {
         this.name = name;
@@ -73,6 +73,11 @@ public class Task {
         this.earliestStart = this.earliestFinish - this.duration;
     }
 
+    void setEarliestStart(int earliestStart) {
+        this.earliestStart = earliestStart;
+        this.earliestFinish = this.earliestStart + this.duration;
+    }
+
     public int getLatestFinish() {
         return latestFinish;
     }
@@ -82,9 +87,17 @@ public class Task {
         this.latestStart = this.latestFinish - this.duration;
     }
 
+    void setLatestStart(int latestStart) {
+        this.latestStart = latestStart;
+        this.latestFinish = this.latestStart + this.duration;
+    }
+
     @Override
     public String toString() {
-        String str = this.name + "(" + this.duration + ")" + "(" + this.earliestStart + "/" + this.earliestFinish + ")";
+        String str = this.name + "(" + this.duration + ")" + "("
+                        + this.earliestStart + "/" + this.earliestFinish + ")"
+                + "(" + this.latestStart + "/" + this.latestFinish + ")";
+
 //        if(this.isEnd) {
 //            str = str.concat(" END");
 //        }
