@@ -35,5 +35,7 @@ class GraphTests {
         System.out.println(tasksGraph.getGraph().vertexSet());
         System.out.println("Critical tasks:");
         System.out.println(tasksGraph.getCriticalTasks());
+        System.out.println("Cmax:");
+        System.out.println(tasksGraph.getcMax());
     }
 }

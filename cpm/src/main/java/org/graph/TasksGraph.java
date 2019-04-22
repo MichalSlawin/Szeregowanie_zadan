@@ -18,15 +18,24 @@ class TasksGraph {
     private Graph<Task, DefaultEdge> graph;
     private List<Path> pathsList;
     private Path criticalPath;
-    private int cMax;
+    private int cMax = -1;
+    private int maxEarliestFinish = -1;
 
     TasksGraph(String fileName) {
         this.graph = new DirectedMultigraph<>(DefaultEdge.class);
-        this.pathsList = new ArrayList<>();
+//        this.pathsList = new ArrayList<>();
         createGraph(fileName);
         setStartAndEndTasks();
-        createPaths();
-        setCriticalStartsAndFinishes();
+//        createPaths();
+        setStartsAndFinishes();
+    }
+
+    public int getcMax() {
+        return cMax;
+    }
+
+    public int getMaxEarliestFinish() {
+        return maxEarliestFinish;
     }
 
     Graph<Task, DefaultEdge> getGraph() {
@@ -41,41 +50,51 @@ class TasksGraph {
         return criticalPath;
     }
 
-    private void setCriticalStartsAndFinishes() {
-        GraphPath<Task, DefaultEdge> path = this.criticalPath.getPath();
-        List<Task> tasks = path.getVertexList();
-        Task lastTask = tasks.get(tasks.size()-1);
+    private void setStartsAndFinishes() {
+//        GraphPath<Task, DefaultEdge> path = this.criticalPath.getPath();
+//        List<Task> tasks = path.getVertexList();
+//        Task lastTask = tasks.get(tasks.size()-1);
+//
+//        lastTask.setEarliestFinish(this.cMax);
+//        lastTask.setLatestFinish(this.cMax);
+//        lastTask.setCritical(true);
 
-        lastTask.setEarliestFinish(this.cMax);
-        lastTask.setLatestFinish(this.cMax);
-        lastTask.setCritical(true);
-
-        for(int i = tasks.size()-2; i >= 0; i--) {
-            Task task = tasks.get(i);
-            task.setEarliestFinish(tasks.get(i+1).getEarliestStart());
-            task.setLatestFinish(tasks.get(i+1).getLatestStart());
-            task.setCritical(true);
-        }
+//        for(int i = tasks.size()-2; i >= 0; i--) {
+//            Task task = tasks.get(i);
+//            task.setEarliestFinish(tasks.get(i+1).getEarliestStart());
+//            task.setLatestFinish(tasks.get(i+1).getLatestStart());
+//            task.setCritical(true);
+//        }
 
         List<Task> startTasks = new ArrayList<>();
+        List<Task> endTasks = new ArrayList<>();
         Set<Task> allTasks = graph.vertexSet();
         for(Task task : allTasks) {
-            if(task.isEnd()) {
-                task.setLatestFinish(this.cMax);
-                tasks.add(task);
-            }
             if(task.isStart()) {
                 task.setEarliestFinish(task.getDuration());
                 startTasks.add(task);
             }
         }
-        setLatestStartsAndFinishes(tasks);
         setEarliestStartsAndFinishes(startTasks);
+
+        for(Task task : allTasks) {
+            if(task.isEnd()) {
+                task.setLatestFinish(this.maxEarliestFinish);
+                endTasks.add(task);
+            }
+        }
+        setLatestStartsAndFinishes(endTasks);
+
+        setCriticalTasks();
     }
 
     private void setLatestStartsAndFinishes(List<Task> tasks) {
         List<Task> tasksRec = new ArrayList<>();
         for(Task task : tasks) {
+            if(task.getLatestFinish() > this.cMax) {
+                this.cMax = task.getLatestFinish();
+            }
+
             Set<DefaultEdge> edges = this.graph.incomingEdgesOf(task);
             for(DefaultEdge edge : edges) {
                 Task source = this.graph.getEdgeSource(edge);
@@ -92,13 +111,16 @@ class TasksGraph {
     }
     private void setEarliestStartsAndFinishes(List<Task> tasks) {
         List<Task> tasksRec = new ArrayList<>();
-        System.out.println("W earliest");
         for(Task task : tasks) {
-            System.out.println(task);
+            if(task.getEarliestFinish() > this.maxEarliestFinish) {
+                this.maxEarliestFinish = task.getEarliestFinish();
+            }
+
+//            System.out.println(task);
             Set<DefaultEdge> edges = this.graph.outgoingEdgesOf(task);
             for(DefaultEdge edge : edges) {
                 Task target = this.graph.getEdgeTarget(edge);
-                System.out.println("target: " + target);
+
                 if(target.getEarliestStart() == -1 || (target.getEarliestStart() != -1
                         && target.getEarliestStart() < task.getEarliestFinish())) {
 
@@ -213,6 +235,14 @@ class TasksGraph {
             }
             if(graph.outgoingEdgesOf(task).isEmpty()) {
                 task.setEnd(true);
+            }
+        }
+    }
+
+    private void setCriticalTasks() {
+        for(Task task : this.graph.vertexSet()) {
+            if(task.getEarliestStart() == task.getLatestStart() && task.getEarliestFinish() == task.getLatestFinish()) {
+                task.setCritical(true);
             }
         }
     }
