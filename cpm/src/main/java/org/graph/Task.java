@@ -94,16 +94,14 @@ public class Task {
 
     @Override
     public String toString() {
-        String str = this.name + "(" + this.duration + ")" + "("
-                        + this.earliestStart + "/" + this.earliestFinish + ")"
+        String str = this.name + "(" + this.duration + ")\n" + "("
+                        + this.earliestStart + "/" + this.earliestFinish + ")\n"
                 + "(" + this.latestStart + "/" + this.latestFinish + ")";
 
-//        if(this.isEnd) {
-//            str = str.concat(" END");
-//        }
-//        if(this.isStart) {
-//            str = str.concat(" START");
-//        }
+        if(this.isCritical) {
+            str = str.concat("\nCRITICAL");
+        }
+
         return str;
     }
 }
