@@ -17,6 +17,7 @@ import java.util.Set;
 class TasksGraph {
     private Graph<Task, DefaultEdge> graph;
     private List<Path> pathsList;
+    private List<Machine> timeTable;
     private Path criticalPath;
     private int cMax = -1;
     private int maxEarliestFinish = -1;
@@ -28,6 +29,7 @@ class TasksGraph {
         setStartAndEndTasks();
 //        createPaths();
         setStartsAndFinishes();
+        setTimeTable();
     }
 
     public int getcMax() {
@@ -51,21 +53,6 @@ class TasksGraph {
     }
 
     private void setStartsAndFinishes() {
-//        GraphPath<Task, DefaultEdge> path = this.criticalPath.getPath();
-//        List<Task> tasks = path.getVertexList();
-//        Task lastTask = tasks.get(tasks.size()-1);
-//
-//        lastTask.setEarliestFinish(this.cMax);
-//        lastTask.setLatestFinish(this.cMax);
-//        lastTask.setCritical(true);
-
-//        for(int i = tasks.size()-2; i >= 0; i--) {
-//            Task task = tasks.get(i);
-//            task.setEarliestFinish(tasks.get(i+1).getEarliestStart());
-//            task.setLatestFinish(tasks.get(i+1).getLatestStart());
-//            task.setCritical(true);
-//        }
-
         List<Task> startTasks = new ArrayList<>();
         List<Task> endTasks = new ArrayList<>();
         Set<Task> allTasks = graph.vertexSet();
@@ -129,6 +116,49 @@ class TasksGraph {
                 tasksRec.add(target);
             }
             setEarliestStartsAndFinishes(tasksRec);
+        }
+    }
+
+    public List<Machine> getTimeTable() {
+        return timeTable;
+    }
+
+    public StringBuilder getTimeTableString() {
+        StringBuilder sb = new StringBuilder();
+        for(Machine machine : timeTable) {
+            sb.append(machine + "\n");
+        }
+        return sb;
+    }
+
+    private void setTimeTable() {
+        this.timeTable = new ArrayList<>();
+        int machineNumber = 1;
+        boolean taskAdded;
+
+        Machine criticalMachine = new Machine(this.cMax, machineNumber);
+        machineNumber++;
+        criticalMachine.setTasks(getCriticalTasks());
+        this.timeTable.add(criticalMachine);
+
+        Set<Task> allTasks = this.graph.vertexSet();
+
+        for(Task task : allTasks) {
+            taskAdded = false;
+            if(!task.isCritical()) {
+                for(Machine machine : this.timeTable) {
+                    if(!taskAdded && !machine.isOccupied(task.getEarliestStart(), task.getLatestFinish())) {
+                        machine.addTask(task);
+                        taskAdded = true;
+                    }
+                }
+                if(!taskAdded) {
+                    Machine machine = new Machine(this.cMax, machineNumber);
+                    machineNumber++;
+                    machine.addTask(task);
+                    this.timeTable.add(machine);
+                }
+            }
         }
     }
 
@@ -216,7 +246,9 @@ class TasksGraph {
                 task2 = new Task(taskName, taskDuration);
                 this.graph.addVertex(task2);
             }
-            graph.addEdge(task1, task2);
+            if(this.graph.getEdge(task2, task1) == null) {
+                this.graph.addEdge(task1, task2);
+            }
         } else {
             String taskName = line.substring(0, line.indexOf('('));
             Task task = findTaskByName(taskName);

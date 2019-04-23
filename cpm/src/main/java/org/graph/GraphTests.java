@@ -31,6 +31,7 @@ class GraphTests {
                 return;
         }
         TasksGraph tasksGraph = new TasksGraph(fileName);
+        System.out.println(tasksGraph.getTimeTableString());
 //        System.out.println("Graph:");
 //        System.out.println(tasksGraph.getGraph());
 //        System.out.println("Critical path:");

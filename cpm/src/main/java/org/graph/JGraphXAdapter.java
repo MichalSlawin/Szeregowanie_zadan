@@ -1,6 +1,7 @@
 package org.graph;
 
 import com.mxgraph.layout.*;
+import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.swing.*;
 import com.mxgraph.util.mxConstants;
 import org.jgrapht.*;
@@ -29,13 +30,10 @@ public class JGraphXAdapter extends JApplet {
     }
 
     @Override
-    public void init()
-    {
-        // create a JGraphT graph
+    public void init() {
         ListenableGraph<Task, DefaultEdge> g =
                 new DefaultListenableGraph<>(this.graph);
 
-        // create a visualization using JGraph, via an adapter
         jgxAdapter = new org.jgrapht.ext.JGraphXAdapter<>(g);
 
         setPreferredSize(DEFAULT_SIZE);
@@ -46,15 +44,12 @@ public class JGraphXAdapter extends JApplet {
         getContentPane().add(component);
         resize(DEFAULT_SIZE);
 
-        // positioning via jgraphx layouts
-        mxCircleLayout layout = new mxCircleLayout(jgxAdapter);
+        // thanks to Patryk Siewruk
+        mxHierarchicalLayout layout = new mxHierarchicalLayout(jgxAdapter);
 
-        // center the circle
-        int radius = 100;
-        layout.setX0((DEFAULT_SIZE.width / 2.0) - radius);
-        layout.setY0((DEFAULT_SIZE.height / 2.0) - radius);
-        layout.setRadius(radius);
-        layout.setMoveCircle(true);
+        layout.setIntraCellSpacing(50);
+        layout.setInterRankCellSpacing(50);
+        layout.setOrientation(SwingConstants.WEST);
 
         layout.execute(jgxAdapter.getDefaultParent());
     }
