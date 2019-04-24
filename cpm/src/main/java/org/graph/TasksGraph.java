@@ -272,9 +272,41 @@ class TasksGraph {
     }
 
     private void setCriticalTasks() {
+        Task startTask = null;
         for(Task task : this.graph.vertexSet()) {
             if(task.getEarliestStart() == task.getLatestStart() && task.getEarliestFinish() == task.getLatestFinish()) {
                 task.setCritical(true);
+            }
+        }
+        for(Task task : this.graph.vertexSet()) {
+            if(task.isCritical() && task.isStart()) {
+                startTask = task;
+            }
+        }
+        setCriticalTasksPath(startTask);
+    }
+
+    private void setCriticalTasksPath(Task task) {
+        List<Task> criticalPath = new ArrayList<>();
+        boolean taskAdded;
+
+        criticalPath.add(task);
+
+        while(!task.isEnd()) {
+            taskAdded = false;
+            Set<DefaultEdge> edges = this.graph.edgesOf(task);
+            for(DefaultEdge edge : edges) {
+                Task targetTask = graph.getEdgeTarget(edge);
+                if(targetTask.isCritical() && targetTask != task && !taskAdded) {
+                    criticalPath.add(targetTask);
+                    task = targetTask;
+                    taskAdded = true;
+                }
+            }
+        }
+        for(Task taskFromAll : this.graph.vertexSet()) {
+            if(!criticalPath.contains(taskFromAll)) {
+                taskFromAll.setCritical(false);
             }
         }
     }

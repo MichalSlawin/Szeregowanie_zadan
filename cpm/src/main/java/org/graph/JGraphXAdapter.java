@@ -1,6 +1,5 @@
 package org.graph;
 
-import com.mxgraph.layout.*;
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.swing.*;
 import com.mxgraph.util.mxConstants;

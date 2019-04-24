@@ -16,7 +16,7 @@ class GraphTests {
         String fileName;
 //        System.out.println("Wybierz input: ");
 //        int choice = input.nextInt();
-        int choice = 2;
+        int choice = 3;
         switch(choice) {
             case 1:
                 fileName = FILENAME1;
