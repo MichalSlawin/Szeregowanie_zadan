@@ -10,12 +10,18 @@ public class Machine {
     private int cMax;
     private boolean[] occupied;
     private List<Task> tasks;
+    private int freeOnTime = 0;
 
     public Machine(int cMax, int number) {
         this.tasks = new ArrayList<>();
         this.cMax = cMax + 1;
         this.occupied = new boolean[this.cMax];
         fill(this.occupied, 0, this.cMax, false);
+        this.number = number;
+    }
+
+    public Machine(int number) {
+        this.tasks = new ArrayList<>();
         this.number = number;
     }
 
@@ -40,24 +46,39 @@ public class Machine {
         return tasks;
     }
 
+    public int getFreeOnTime() {
+        return freeOnTime;
+    }
+
     public void setTasks(List<Task> tasks) {
         for(Task task : tasks) {
-            addTask(task);
+            addTaskCPM(task);
         }
     }
 
-    public void addTask(Task task) {
+    public void addTaskCPM(Task task) {
         this.tasks.add(task);
         for(int i = task.getEarliestStart(); i < task.getLatestFinish(); i++) {
             this.occupied[i] = true;
         }
     }
 
+    public void addTaskHu(Task task) {
+        task.setStartTime(this.freeOnTime);
+        this.tasks.add(task);
+        this.freeOnTime += task.getDuration();
+        task.setEndTime(this.freeOnTime);
+    }
+
     @Override
     public String toString() {
         List<String> tasksStr = new ArrayList<>();
         for(Task task : this.tasks) {
-            tasksStr.add(task.getName() + "(" + task.getEarliestStart() + "/" + task.getLatestFinish() + ")");
+            if(task.getEarliestStart() != -1) {
+                tasksStr.add(task.getName() + "(" + task.getEarliestStart() + "/" + task.getLatestFinish() + ")");
+            } else {
+                tasksStr.add(task.getName() + "(" + task.getStartTime() + "/" + task.getEndTime() + ")");
+            }
         }
         return "M" + this.number + ": " + tasksStr;
     }

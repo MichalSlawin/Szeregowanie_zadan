@@ -24,12 +24,8 @@ class TasksGraph {
 
     TasksGraph(String fileName) {
         this.graph = new DirectedMultigraph<>(DefaultEdge.class);
-//        this.pathsList = new ArrayList<>();
         createGraph(fileName);
         setStartAndEndTasks();
-//        createPaths();
-        setStartsAndFinishes();
-        setTimeTable();
     }
 
     public int getcMax() {
@@ -50,6 +46,15 @@ class TasksGraph {
 
     Path getCriticalPath() {
         return criticalPath;
+    }
+
+    public void setTimeTable(List<Machine> timeTable) {
+        this.timeTable = timeTable;
+    }
+
+    public void cpm() {
+        setStartsAndFinishes();
+        setTimeTableCPM();
     }
 
     private void setStartsAndFinishes() {
@@ -131,7 +136,7 @@ class TasksGraph {
         return sb;
     }
 
-    private void setTimeTable() {
+    private void setTimeTableCPM() {
         this.timeTable = new ArrayList<>();
         int machineNumber = 1;
         boolean taskAdded;
@@ -148,14 +153,14 @@ class TasksGraph {
             if(!task.isCritical()) {
                 for(Machine machine : this.timeTable) {
                     if(!taskAdded && !machine.isOccupied(task.getEarliestStart(), task.getLatestFinish())) {
-                        machine.addTask(task);
+                        machine.addTaskCPM(task);
                         taskAdded = true;
                     }
                 }
                 if(!taskAdded) {
                     Machine machine = new Machine(this.cMax, machineNumber);
                     machineNumber++;
-                    machine.addTask(task);
+                    machine.addTaskCPM(task);
                     this.timeTable.add(machine);
                 }
             }

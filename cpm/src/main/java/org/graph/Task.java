@@ -10,10 +10,21 @@ public class Task {
     private int latestStart = -1;
     private int earliestFinish = -1;
     private int latestFinish = -1;
+    private boolean isFinished = false;
+    private int startTime = -1;
+    private int endTime = -1;
 
     Task(String name, int duration) {
         this.name = name;
         this.duration = duration;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    public void setFinished(boolean finished) {
+        isFinished = finished;
     }
 
     String getName() {
@@ -92,11 +103,32 @@ public class Task {
         this.latestFinish = this.latestStart + this.duration;
     }
 
+    public int getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(int startTime) {
+        this.startTime = startTime;
+    }
+
+    public int getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(int endTime) {
+        this.endTime = endTime;
+    }
+
     @Override
     public String toString() {
-        String str = this.name + "(" + this.duration + ")\n" + "("
-                        + this.earliestStart + "/" + this.earliestFinish + ")\n"
-                + "(" + this.latestStart + "/" + this.latestFinish + ")";
+        String str = this.name + "(" + this.duration + ")";
+        if(this.earliestStart != -1) {
+            str = str.concat("\n("
+                    + this.earliestStart + "/" + this.earliestFinish + ")\n"
+                    + "(" + this.latestStart + "/" + this.latestFinish + ")");
+        } else if(this.startTime != -1) {
+            str = str.concat("\n(" + this.startTime + "/" + this.endTime + ")");
+        }
 
         if(this.isCritical) {
             str = str.concat("\nCRITICAL");
