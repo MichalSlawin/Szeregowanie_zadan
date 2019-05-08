@@ -5,12 +5,14 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.AllDirectedPaths;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.graph.EdgeReversedGraph;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -21,11 +23,16 @@ class TasksGraph {
     private Path criticalPath;
     private int cMax = -1;
     private int maxEarliestFinish = -1;
+    private int maxDepth = -1;
 
-    TasksGraph(String fileName) {
+    TasksGraph(String fileName, boolean sameDuration) {
         this.graph = new DirectedMultigraph<>(DefaultEdge.class);
-        createGraph(fileName);
+        createGraph(fileName, sameDuration);
         setStartAndEndTasks();
+    }
+
+    public int getMaxDepth() {
+        return maxDepth;
     }
 
     public int getcMax() {
@@ -50,6 +57,27 @@ class TasksGraph {
 
     public void setTimeTable(List<Machine> timeTable) {
         this.timeTable = timeTable;
+    }
+
+    public void reverseTimeTable() {
+        int maxSize = 0;
+        int maxMachineInd = 0;
+
+        for(int i = 0; i < this.timeTable.size(); i++) {
+            Machine machine = this.timeTable.get(i);
+            if(machine.getTasks().size() > maxSize) {
+                maxSize = machine.getTasks().size();
+                maxMachineInd = i;
+            }
+        }
+
+        for(Machine machine : this.timeTable) {
+            int sizeDiff = maxSize - machine.getTasks().size();
+            for(int i = 0; i < sizeDiff; i++) {
+                machine.getTasks().add(null);
+            }
+            Collections.reverse(machine.getTasks());
+        }
     }
 
     public void cpm() {
@@ -206,7 +234,7 @@ class TasksGraph {
 
     }
 
-    private void createGraph(String fileName) {
+    private void createGraph(String fileName, boolean sameDurations) {
         String line;
 
         try {
@@ -215,7 +243,7 @@ class TasksGraph {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
             while((line = bufferedReader.readLine()) != null) {
-                createTasksAndEdge(line);
+                createTasksAndEdge(line, sameDurations);
             }
             bufferedReader.close();
         }
@@ -227,7 +255,7 @@ class TasksGraph {
         }
     }
 
-    private void createTasksAndEdge(String line) {
+    private void createTasksAndEdge(String line, boolean sameDurations) {
         int taskDuration;
         int dashIndex = line.indexOf('-');
         if(dashIndex != -1) {
@@ -237,7 +265,7 @@ class TasksGraph {
 
             Task task1 = findTaskByName(taskName);
             if(task1 == null) {
-                taskDuration = Integer.parseInt(taskStr.substring(taskStr.indexOf('(')+1, taskStr.indexOf(')')));
+                taskDuration = getTaskDuration(taskStr, sameDurations);
                 task1 = new Task(taskName, taskDuration);
                 this.graph.addVertex(task1);
             }
@@ -247,7 +275,7 @@ class TasksGraph {
 //            System.out.println(taskStr);
             Task task2 = findTaskByName(taskName);
             if(task2 == null) {
-                taskDuration = Integer.parseInt(taskStr.substring(taskStr.indexOf('(')+1, taskStr.indexOf(')')));
+                taskDuration = getTaskDuration(taskStr, sameDurations);
                 task2 = new Task(taskName, taskDuration);
                 this.graph.addVertex(task2);
             }
@@ -258,11 +286,19 @@ class TasksGraph {
             String taskName = line.substring(0, line.indexOf('('));
             Task task = findTaskByName(taskName);
             if(task == null) {
-                taskDuration = Integer.parseInt(line.substring(line.indexOf('(')+1, line.indexOf(')')));
+                taskDuration = getTaskDuration(line, sameDurations);
                 task = new Task(taskName, taskDuration);
                 this.graph.addVertex(task);
             }
         }
+    }
+
+    private int getTaskDuration(String taskStr, boolean sameDurations) {
+        int taskDuration = 1;
+        if(!sameDurations) {
+            taskDuration = Integer.parseInt(taskStr.substring(taskStr.indexOf('(')+1, taskStr.indexOf(')')));
+        }
+        return taskDuration;
     }
 
     private void setStartAndEndTasks() {
@@ -316,7 +352,7 @@ class TasksGraph {
         }
     }
 
-    private List<Task> getStartTasks() {
+    List<Task> getStartTasks() {
         List<Task> tasksList = new ArrayList<>();
         Set<Task> tasksSet = this.graph.vertexSet();
         for(Task task : tasksSet) {
@@ -327,7 +363,7 @@ class TasksGraph {
         return tasksList;
     }
 
-    private List<Task> getEndTasks() {
+    List<Task> getEndTasks() {
         List<Task> tasksList = new ArrayList<>();
         Set<Task> tasksSet = this.graph.vertexSet();
         for(Task task : tasksSet) {
@@ -356,5 +392,47 @@ class TasksGraph {
             }
         }
         return null;
+    }
+
+    void reverseTree() {
+        Graph<Task, DefaultEdge> graph = new EdgeReversedGraph(this.graph);
+        this.graph = graph;
+        List<Task> startTasks = getStartTasks();
+        List<Task> endTasks = getEndTasks();
+
+        for(Task task : startTasks) {
+            task.setEnd(true);
+            task.setStart(false);
+        }
+        for(Task task : endTasks) {
+            task.setEnd(false);
+            task.setStart(true);
+        }
+    }
+
+    void setTasksDepth() throws Exception {
+        if(getEndTasks().size() == 1) {
+            Task endTask = getEndTasks().get(0);
+            endTask.setDepth(0);
+            Set<DefaultEdge> endEdges = this.graph.incomingEdgesOf(endTask);
+
+            setTasksDepthRec(endEdges);
+        }
+        else {
+            throw new Exception("Drzewo nie jest wejsciowe!");
+        }
+    }
+
+    private void setTasksDepthRec(Set<DefaultEdge> edges) {
+        for(DefaultEdge edge : edges) {
+            Task sourceTask = this.graph.getEdgeSource(edge);
+            Task targetTask = this.graph.getEdgeTarget(edge);
+
+            sourceTask.setDepth(targetTask.getDepth() + 1);
+            if(!sourceTask.isStart()) {
+                Set<DefaultEdge> edgesRec = this.graph.incomingEdgesOf(sourceTask);
+                setTasksDepthRec(edgesRec);
+            }
+        }
     }
 }

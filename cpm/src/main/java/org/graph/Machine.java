@@ -74,10 +74,14 @@ public class Machine {
     public String toString() {
         List<String> tasksStr = new ArrayList<>();
         for(Task task : this.tasks) {
-            if(task.getEarliestStart() != -1) {
-                tasksStr.add(task.getName() + "(" + task.getEarliestStart() + "/" + task.getLatestFinish() + ")");
+            if(task == null) {
+                tasksStr.add("-");
+//            } else if(task.getEarliestStart() != -1) {
+//                tasksStr.add(task.getName() + "(" + task.getEarliestStart() + "/" + task.getLatestFinish() + ")");
+//            } else {
+//                tasksStr.add(task.getName() + "(" + task.getStartTime() + "/" + task.getEndTime() + ")");
             } else {
-                tasksStr.add(task.getName() + "(" + task.getStartTime() + "/" + task.getEndTime() + ")");
+                tasksStr.add(task.getName());
             }
         }
         return "M" + this.number + ": " + tasksStr;

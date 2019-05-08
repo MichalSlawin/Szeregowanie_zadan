@@ -13,10 +13,23 @@ public class Task {
     private boolean isFinished = false;
     private int startTime = -1;
     private int endTime = -1;
+    private int depth = -1;
 
     Task(String name, int duration) {
         this.name = name;
         this.duration = duration;
+    }
+
+    Task(String name) {
+        this.name = name;
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 
     public boolean isFinished() {
@@ -121,7 +134,7 @@ public class Task {
 
     @Override
     public String toString() {
-        String str = this.name + "(" + this.duration + ")";
+        String str = this.name + "(dur:" + this.duration + ")\n(dep:" + this.depth + ")";
         if(this.earliestStart != -1) {
             str = str.concat("\n("
                     + this.earliestStart + "/" + this.earliestFinish + ")\n"

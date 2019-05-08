@@ -11,10 +11,20 @@ class GraphTests {
     private final static String FILENAME2 = "inputFiles/inputZajecia.txt";
     private final static String FILENAME3 = "inputFiles/input2.txt";
     private final static String HUFILENAME1 = "inputFiles/huinput1.txt";
+    private final static String HUFILENAME2 = "inputFiles/huinput2.txt";
+    private final static String HUFILENAME3 = "inputFiles/huinput3.txt";
+    private final static int MACHINES_NUM = 3;
+
 
     static void huTest() {
-        TasksGraph tasksGraph = new TasksGraph(HUFILENAME1);
-        HuMethod huMethod = new HuMethod(3, tasksGraph);
+        TasksGraph tasksGraph = new TasksGraph(HUFILENAME1, true);
+        HuMethod huMethod = null;
+        try {
+            huMethod = new HuMethod(MACHINES_NUM, tasksGraph);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
         huMethod.huMethod();
 
         System.out.println(tasksGraph.getTimeTableString());
@@ -40,7 +50,7 @@ class GraphTests {
             default :
                 return;
         }
-        TasksGraph tasksGraph = new TasksGraph(fileName);
+        TasksGraph tasksGraph = new TasksGraph(fileName, false);
         tasksGraph.cpm();
 
         System.out.println(tasksGraph.getTimeTableString());

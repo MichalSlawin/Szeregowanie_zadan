@@ -11,10 +11,12 @@ public class HuMethod {
     private TasksGraph tasksGraph;
     private List<Machine> machines;
     private int currTime = 0;
+    private boolean inTree;
 
-    public HuMethod(int machinesNum, TasksGraph tasksGraph) {
+    public HuMethod(int machinesNum, TasksGraph tasksGraph) throws Exception {
         this.machinesNum = machinesNum;
         this.tasksGraph = tasksGraph;
+        isTree();
 
         this.machines = new ArrayList<>();
         for(int i = 0; i < machinesNum; i++) {
@@ -22,14 +24,46 @@ public class HuMethod {
         }
     }
 
+    private void isTree() throws Exception {
+        int startsNum = this.tasksGraph.getStartTasks().size();
+        int endTasks = this.tasksGraph.getEndTasks().size();
+
+        if(startsNum == 1) {
+            this.inTree = false;
+        } else if(endTasks == 1) {
+            this.inTree = true;
+        } else {
+            throw new Exception("Graf nie jest drzewem!");
+        }
+    }
+
+    // najpierw najbardziej oddalone od korzenia,
+    // drzewo wchodzace albo wychodzace
     public void huMethod() {
+        if(!this.inTree) {
+            this.tasksGraph.reverseTree();
+            System.out.println("odwracam drzewo");
+        }
+        try {
+            this.tasksGraph.setTasksDepth();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
         Set<Task> allTasks = this.tasksGraph.getGraph().vertexSet();
         int allTasksNum = allTasks.size();
         int addedTasks = 0;
 
         while(addedTasks < allTasksNum) {
+            int currDepth = 0;
             for(Task task : allTasks) {
-                if(isTaskFree(task) && !task.isFinished()) {
+                if(isTaskFree(task) && !task.isFinished() && task.getDepth() > currDepth) {
+                    currDepth = task.getDepth();
+                }
+            }
+            for(Task task : allTasks) {
+                if(isTaskFree(task) && !task.isFinished() && task.getDepth() == currDepth) {
                     int earliestStart = getTaskEarliestStart(task);
                     int bestMachineNum = 0;
 
@@ -53,11 +87,13 @@ public class HuMethod {
                     } else {
                         System.out.println("Nie znaleziono maszyny dla zadania " + task);
                     }
-
                 }
             }
         }
         tasksGraph.setTimeTable(this.machines);
+        if(!this.inTree) {
+            tasksGraph.reverseTimeTable();
+        }
     }
 
     private boolean isTaskFree(Task task) {
