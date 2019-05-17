@@ -14,8 +14,16 @@ public class Task {
     private int startTime = -1;
     private int endTime = -1;
     private int depth = -1;
+    private int expectedEndTime = -1;
+    private int modifiedExpectedEndTime = 1;
 
     Task(String name, int duration) {
+        this.name = name;
+        this.duration = duration;
+    }
+
+    Task(String name, int duration, int expectedEndTime) {
+        this.expectedEndTime = expectedEndTime;
         this.name = name;
         this.duration = duration;
     }
@@ -30,6 +38,22 @@ public class Task {
 
     public void setDepth(int depth) {
         this.depth = depth;
+    }
+
+    public int getExpectedEndTime() {
+        return expectedEndTime;
+    }
+
+    public void setExpectedEndTime(int expectedEndTime) {
+        this.expectedEndTime = expectedEndTime;
+    }
+
+    public int getModifiedExpectedEndTime() {
+        return modifiedExpectedEndTime;
+    }
+
+    public void setModifiedExpectedEndTime(int modifiedExpectedEndTime) {
+        this.modifiedExpectedEndTime = modifiedExpectedEndTime;
     }
 
     public boolean isFinished() {
@@ -134,7 +158,8 @@ public class Task {
 
     @Override
     public String toString() {
-        String str = this.name + "(dur:" + this.duration + ")\n(dep:" + this.depth + ")";
+        String str = this.name;
+        // + "(dur:" + this.duration + ")\n(dep:" + this.depth + ")";
         if(this.earliestStart != -1) {
             str = str.concat("\n("
                     + this.earliestStart + "/" + this.earliestFinish + ")\n"
@@ -142,6 +167,9 @@ public class Task {
         } else if(this.startTime != -1) {
             str = str.concat("\n(" + this.startTime + "/" + this.endTime + ")");
         }
+
+        str = str.concat("\n(" + this.expectedEndTime + ")(" + this.modifiedExpectedEndTime + ")");
+
 
         if(this.isCritical) {
             str = str.concat("\nCRITICAL");

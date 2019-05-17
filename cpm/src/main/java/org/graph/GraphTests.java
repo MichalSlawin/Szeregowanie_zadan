@@ -13,19 +13,39 @@ class GraphTests {
     private final static String HUFILENAME1 = "inputFiles/huinput1.txt";
     private final static String HUFILENAME2 = "inputFiles/huinput2.txt";
     private final static String HUFILENAME3 = "inputFiles/huinput3.txt";
-    private final static int MACHINES_NUM = 3;
+    private final static String BRUCKERFILENAME1 = "inputFiles/inputBrucker.txt";
+    private final static int MACHINES_NUM = 4;
 
-
-    static void huTest() {
-        TasksGraph tasksGraph = new TasksGraph(HUFILENAME1, true);
-        HuMethod huMethod = null;
+    static void bruckerTest() {
+        TasksGraph tasksGraph = new TasksGraph(BRUCKERFILENAME1, true, true);
+        HuBruckerMethod huBruckerMethod = null;
         try {
-            huMethod = new HuMethod(MACHINES_NUM, tasksGraph);
+            huBruckerMethod = new HuBruckerMethod(MACHINES_NUM, tasksGraph);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
-        huMethod.huMethod();
+        try {
+            huBruckerMethod.bruckerMethod();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+
+        System.out.println(tasksGraph.getTimeTableString());
+        drawGraph(tasksGraph.getGraph());
+    }
+
+    static void huTest() {
+        TasksGraph tasksGraph = new TasksGraph(HUFILENAME1, true, false);
+        HuBruckerMethod huBruckerMethod = null;
+        try {
+            huBruckerMethod = new HuBruckerMethod(MACHINES_NUM, tasksGraph);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        huBruckerMethod.huMethod();
 
         System.out.println(tasksGraph.getTimeTableString());
         drawGraph(tasksGraph.getGraph());
@@ -50,7 +70,7 @@ class GraphTests {
             default :
                 return;
         }
-        TasksGraph tasksGraph = new TasksGraph(fileName, false);
+        TasksGraph tasksGraph = new TasksGraph(fileName, false, false);
         tasksGraph.cpm();
 
         System.out.println(tasksGraph.getTimeTableString());

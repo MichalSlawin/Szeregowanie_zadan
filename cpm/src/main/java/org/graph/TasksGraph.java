@@ -25,9 +25,9 @@ class TasksGraph {
     private int maxEarliestFinish = -1;
     private int maxDepth = -1;
 
-    TasksGraph(String fileName, boolean sameDuration) {
+    TasksGraph(String fileName, boolean sameDuration, boolean brucker) {
         this.graph = new DirectedMultigraph<>(DefaultEdge.class);
-        createGraph(fileName, sameDuration);
+        createGraph(fileName, sameDuration, brucker);
         setStartAndEndTasks();
     }
 
@@ -234,7 +234,7 @@ class TasksGraph {
 
     }
 
-    private void createGraph(String fileName, boolean sameDurations) {
+    private void createGraph(String fileName, boolean sameDurations, boolean brucker) {
         String line;
 
         try {
@@ -243,7 +243,7 @@ class TasksGraph {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
             while((line = bufferedReader.readLine()) != null) {
-                createTasksAndEdge(line, sameDurations);
+                createTasksAndEdge(line, sameDurations, brucker);
             }
             bufferedReader.close();
         }
@@ -255,28 +255,35 @@ class TasksGraph {
         }
     }
 
-    private void createTasksAndEdge(String line, boolean sameDurations) {
+    private void createTasksAndEdge(String line, boolean sameDurations, boolean brucker) {
         int taskDuration;
         int dashIndex = line.indexOf('-');
         if(dashIndex != -1) {
-//            System.out.println(line);
             String taskStr = line.substring(0, dashIndex);
             String taskName = taskStr.substring(0, taskStr.indexOf('('));
 
             Task task1 = findTaskByName(taskName);
             if(task1 == null) {
                 taskDuration = getTaskDuration(taskStr, sameDurations);
-                task1 = new Task(taskName, taskDuration);
+                if(brucker) {
+                    task1 = new Task(taskName, taskDuration, getNumberInBrackets(taskStr));
+                } else {
+                    task1 = new Task(taskName, taskDuration);
+                }
+
                 this.graph.addVertex(task1);
             }
 
             taskStr = line.substring(dashIndex+1);
             taskName = taskStr.substring(0, taskStr.indexOf('('));
-//            System.out.println(taskStr);
             Task task2 = findTaskByName(taskName);
             if(task2 == null) {
                 taskDuration = getTaskDuration(taskStr, sameDurations);
-                task2 = new Task(taskName, taskDuration);
+                if(brucker) {
+                    task2 = new Task(taskName, taskDuration, getNumberInBrackets(taskStr));
+                } else {
+                    task2 = new Task(taskName, taskDuration);
+                }
                 this.graph.addVertex(task2);
             }
             if(this.graph.getEdge(task2, task1) == null) {
@@ -287,7 +294,11 @@ class TasksGraph {
             Task task = findTaskByName(taskName);
             if(task == null) {
                 taskDuration = getTaskDuration(line, sameDurations);
-                task = new Task(taskName, taskDuration);
+                if(brucker) {
+                    task = new Task(taskName, taskDuration, getNumberInBrackets(line));
+                } else {
+                    task = new Task(taskName, taskDuration);
+                }
                 this.graph.addVertex(task);
             }
         }
@@ -296,9 +307,13 @@ class TasksGraph {
     private int getTaskDuration(String taskStr, boolean sameDurations) {
         int taskDuration = 1;
         if(!sameDurations) {
-            taskDuration = Integer.parseInt(taskStr.substring(taskStr.indexOf('(')+1, taskStr.indexOf(')')));
+            taskDuration = getNumberInBrackets(taskStr);
         }
         return taskDuration;
+    }
+
+    private int getNumberInBrackets(String taskStr) {
+        return Integer.parseInt(taskStr.substring(taskStr.indexOf('(')+1, taskStr.indexOf(')')));
     }
 
     private void setStartAndEndTasks() {

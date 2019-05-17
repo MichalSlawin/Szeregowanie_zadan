@@ -1,19 +1,24 @@
 package org.graph;
 
+import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class HuMethod {
+import static sun.swing.MenuItemLayoutHelper.max;
+
+public class HuBruckerMethod {
     private int machinesNum;
     private TasksGraph tasksGraph;
     private List<Machine> machines;
     private int currTime = 0;
     private boolean inTree;
+    private int maxModifiedExpectedEndTime;
+    private Task endTask;
 
-    public HuMethod(int machinesNum, TasksGraph tasksGraph) throws Exception {
+    public HuBruckerMethod(int machinesNum, TasksGraph tasksGraph) throws Exception {
         this.machinesNum = machinesNum;
         this.tasksGraph = tasksGraph;
         isTree();
@@ -37,8 +42,82 @@ public class HuMethod {
         }
     }
 
-    // najpierw najbardziej oddalone od korzenia,
-    // drzewo wchodzace albo wychodzace
+    public void bruckerMethod() throws Exception {
+        List<Task> endTasks = tasksGraph.getEndTasks();
+        if(endTasks.size() == 1) {
+            Task endTask = endTasks.get(0);
+            this.endTask = endTask;
+            endTask.setModifiedExpectedEndTime(1-endTask.getExpectedEndTime());
+            this.maxModifiedExpectedEndTime = endTask.getModifiedExpectedEndTime();
+
+            setModifiedExpectedEndTimes(endTask);
+            bruckerSetTimeTable();
+        } else {
+            throw new Exception("Graf nie jest drzewem wchodzacym!");
+        }
+    }
+
+    private void setModifiedExpectedEndTimes(Task task) {
+        Graph<Task, DefaultEdge> graph = this.tasksGraph.getGraph();
+        Set<DefaultEdge> edges = graph.incomingEdgesOf(task);
+
+        for(DefaultEdge edge : edges) {
+            Task source = graph.getEdgeSource(edge);
+            source.setModifiedExpectedEndTime(max(1+task.getModifiedExpectedEndTime(), 1-source.getExpectedEndTime()));
+            if(this.maxModifiedExpectedEndTime < source.getModifiedExpectedEndTime()) {
+                this.maxModifiedExpectedEndTime = source.getModifiedExpectedEndTime();
+            }
+            setModifiedExpectedEndTimes(source);
+        }
+    }
+
+    public void bruckerSetTimeTable() {
+        Set<Task> allTasks = this.tasksGraph.getGraph().vertexSet();
+        int allTasksNum = allTasks.size();
+        int addedTasks = 0;
+
+        while(addedTasks < allTasksNum) {
+            Task task = bruckerFindTask();
+
+            int earliestStart = getTaskEarliestStart(task);
+            int bestMachineNum = 0;
+
+            for(Machine machine : this.machines) {
+                if(machine.getFreeOnTime() >= earliestStart && !task.isFinished()) {
+                    Machine bestMachine = getMachineByNumber(bestMachineNum);
+                    if(bestMachine != null) {
+                        if(machine.getFreeOnTime() < bestMachine.getFreeOnTime()) {
+                            bestMachineNum = machine.getNumber();
+                        }
+                    } else {
+                        System.out.println("Nie znaleziono maszyny o indeksie " + bestMachineNum);
+                    }
+                }
+            }
+            Machine bestMachine = getMachineByNumber(bestMachineNum);
+            if(bestMachine != null) {
+                bestMachine.addTaskHu(task);
+                task.setFinished(true);
+                addedTasks++;
+            } else {
+                System.out.println("Nie znaleziono maszyny dla zadania " + task);
+            }
+        }
+        tasksGraph.setTimeTable(this.machines);
+    }
+
+    private Task bruckerFindTask() {
+        Set<Task> allTasks = this.tasksGraph.getGraph().vertexSet();
+        Task foundTask = this.endTask;
+
+        for(Task task : allTasks) {
+            if(isTaskFree(task) && !task.isFinished() && task.getModifiedExpectedEndTime() > foundTask.getModifiedExpectedEndTime()) {
+                foundTask = task;
+            }
+        }
+        return foundTask;
+    }
+
     public void huMethod() {
         if(!this.inTree) {
             this.tasksGraph.reverseTree();
