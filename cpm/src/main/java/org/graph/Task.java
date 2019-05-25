@@ -1,5 +1,8 @@
 package org.graph;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Task {
     private String name;
     private int duration;
@@ -16,6 +19,7 @@ public class Task {
     private int depth = -1;
     private int expectedEndTime = -1;
     private int modifiedExpectedEndTime = 1;
+    private List<Integer> durationsList;
 
     Task(String name, int duration) {
         this.name = name;
@@ -30,6 +34,19 @@ public class Task {
 
     Task(String name) {
         this.name = name;
+        this.durationsList = new ArrayList<>();
+    }
+
+    public void addDuration(int duration) {
+        this.durationsList.add(duration);
+    }
+
+    public List<Integer> getDurationsList() {
+        return durationsList;
+    }
+
+    public void setDurationsList(List<Integer> durationsList) {
+        this.durationsList = durationsList;
     }
 
     public int getDepth() {
@@ -165,11 +182,11 @@ public class Task {
                     + this.earliestStart + "/" + this.earliestFinish + ")\n"
                     + "(" + this.latestStart + "/" + this.latestFinish + ")");
         } else if(this.startTime != -1) {
-            str = str.concat("\n(" + this.startTime + "/" + this.endTime + ")");
+            str = str.concat("(" + this.startTime + "/" + this.endTime + ")");
         }
-
-        str = str.concat("\n(" + this.expectedEndTime + ")(" + this.modifiedExpectedEndTime + ")");
-
+        if(this.expectedEndTime != -1 && this.modifiedExpectedEndTime != 1) {
+            str = str.concat("\n(" + this.expectedEndTime + ")(" + this.modifiedExpectedEndTime + ")");
+        }
 
         if(this.isCritical) {
             str = str.concat("\nCRITICAL");

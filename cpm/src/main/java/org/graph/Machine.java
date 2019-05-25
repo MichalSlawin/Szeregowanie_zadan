@@ -11,6 +11,7 @@ public class Machine {
     private boolean[] occupied;
     private List<Task> tasks;
     private int freeOnTime = 0;
+    private List<Integer> tasksDurations;
 
     public Machine(int cMax, int number) {
         this.tasks = new ArrayList<>();
@@ -20,9 +21,15 @@ public class Machine {
         this.number = number;
     }
 
-    public Machine(int number) {
-        this.tasks = new ArrayList<>();
+    public Machine(int number, List<Integer> tasksDurations) {
+        this.tasksDurations = tasksDurations;
         this.number = number;
+        this.tasks = new ArrayList<>();
+    }
+
+    public Machine(int number) {
+        this.number = number;
+        this.tasks = new ArrayList<>();
     }
 
     public boolean isOccupied(int startInd, int endInd) {
@@ -32,6 +39,10 @@ public class Machine {
             }
         }
         return false;
+    }
+
+    public List<Integer> getTasksDurations() {
+        return tasksDurations;
     }
 
     public int getNumber() {
@@ -70,6 +81,20 @@ public class Machine {
         task.setEndTime(this.freeOnTime);
     }
 
+    public int addTaskJohnson(Task task, int waitTime) {
+        if(this.freeOnTime < waitTime) {
+            this.freeOnTime = waitTime;
+        }
+        int duration = task.getDurationsList().get(this.number-1);
+        Task taskToAdd = new Task(task.getName(), duration);
+        taskToAdd.setStartTime(this.freeOnTime);
+        this.tasks.add(taskToAdd);
+        this.freeOnTime += duration;
+        taskToAdd.setEndTime(this.freeOnTime);
+
+        return this.freeOnTime;
+    }
+
     @Override
     public String toString() {
         List<String> tasksStr = new ArrayList<>();
@@ -84,6 +109,7 @@ public class Machine {
                 tasksStr.add(task.getName());
             }
         }
-        return "M" + this.number + ": " + tasksStr;
+
+        return "M" + this.number + ": " + this.tasksDurations;
     }
 }

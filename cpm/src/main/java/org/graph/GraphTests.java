@@ -14,6 +14,7 @@ class GraphTests {
     private final static String HUFILENAME2 = "inputFiles/huinput2.txt";
     private final static String HUFILENAME3 = "inputFiles/huinput3.txt";
     private final static String BRUCKERFILENAME1 = "inputFiles/inputBrucker.txt";
+    private final static String JOHNSON = "inputFiles/johnson.txt";
     private final static int MACHINES_NUM = 4;
 
     static void bruckerTest() {
