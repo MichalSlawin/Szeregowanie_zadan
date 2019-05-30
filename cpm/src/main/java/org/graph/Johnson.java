@@ -66,7 +66,7 @@ public class Johnson {
     private void init(String fileName) throws Exception {
         String line;
         int lines = 0;
-        int duration;
+        int duration = 0;
 
         try {
             FileReader fileReader = new FileReader(fileName);
@@ -80,7 +80,12 @@ public class Johnson {
                 String restOfNums = line.substring(line.indexOf(' ')+1);
 
                 List<Integer> durations = new ArrayList<>();
-                duration = Integer.valueOf(numberStr);
+                try {
+                    duration = Integer.valueOf(numberStr);
+                } catch(NumberFormatException e) {
+                    System.out.println("Zly format pliku");
+                    System.exit(-1);
+                }
                 durations.add(duration);
                 if(lines == 1) {
                     this.tasksCount++;
@@ -101,7 +106,13 @@ public class Johnson {
                         numberStr = restOfNums;
                         restOfNums = null;
                     }
-                    duration = Integer.valueOf(numberStr);
+                    try {
+                        duration = Integer.valueOf(numberStr);
+                    } catch(NumberFormatException e) {
+                        System.out.println("Zly format pliku");
+                        System.exit(-1);
+                    }
+
                     durations.add(duration);
                     this.tasks.get(taskNum++).addDuration(duration);
                 }
@@ -127,18 +138,22 @@ public class Johnson {
 
         for(int i = 0; i < tasksCount; i++) {
             int mach1TaskDur = machines.get(0).getTasksDurations().get(i);
-            int mach2TaskDur = machines.get(1).getTasksDurations().get(i);
-            if(mach2TaskDur > mach1TaskDur) {
-                dominated = false;
+            for(int j = 0; j < tasksCount; j++) {
+                int mach2TaskDur = machines.get(1).getTasksDurations().get(i);
+                if(mach2TaskDur > mach1TaskDur) {
+                    dominated = false;
+                }
             }
         }
         if(!dominated) {
             dominated = true;
             for(int i = 0; i < tasksCount; i++) {
-                int mach2TaskDur = machines.get(1).getTasksDurations().get(i);
                 int mach3TaskDur = machines.get(2).getTasksDurations().get(i);
-                if(mach2TaskDur > mach3TaskDur) {
-                    dominated = false;
+                for(int j = 0; j < tasksCount; j++) {
+                    int mach2TaskDur = machines.get(1).getTasksDurations().get(j);
+                    if(mach2TaskDur > mach3TaskDur) {
+                        dominated = false;
+                    }
                 }
             }
         }

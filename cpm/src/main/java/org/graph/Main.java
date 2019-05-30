@@ -4,6 +4,7 @@ import static org.graph.GraphTests.*;
 
 public class Main {
     private final static String JOHNSON_FILENAME = "inputFiles/johnson.txt";
+    private final static String JOHNSON_FILENAME2 = "inputFiles/johnson2.txt";
 
     public static void main(String[] args) {
         johnsonTest();
